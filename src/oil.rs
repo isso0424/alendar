@@ -1,7 +1,7 @@
 use bitflags::bitflags;
 
 #[allow(unused)]
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum SimpleNote {
     Top,
     Middle,
@@ -9,7 +9,7 @@ pub enum SimpleNote {
 }
 
 #[allow(unused)]
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum Note {
     SimpleNote(SimpleNote),
     TopAndMiddle,
@@ -109,11 +109,13 @@ impl Family {
 }
 
 #[allow(unused)]
+#[derive(Clone)]
 pub struct EssentialOil {
     name: String,
     note: Note,
     family: Family,
     // TODO: add effect
+    // TODO: add remain
 }
 
 #[allow(unused)]
@@ -124,6 +126,18 @@ impl EssentialOil {
             note,
             family,
         }
+    }
+
+    pub fn satisfy_note(&self, note: SimpleNote) -> bool {
+        self.note.satisfy(note)
+    }
+
+    pub fn satisfy_family(&self, family: Family) -> bool {
+        self.family.satisfy(family)
+    }
+
+    pub fn compatible_family(&self, family: Family, threshold: usize) -> bool {
+        self.family.distance(family) <= threshold
     }
 }
 

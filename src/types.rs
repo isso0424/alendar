@@ -126,3 +126,22 @@ impl EssentialOil {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_calc_distance() {
+        let c = Family::Citrus;
+        let h = Family::Herball;
+        let e = Family::Earthy;
+
+        assert_eq!(c.distance(h), 2);
+        assert_eq!(c.distance(e), 1);
+
+        let brend_e_h = e.add(h);
+        assert_eq!(brend_e_h.distance(c), 1);
+        assert_eq!(brend_e_h.distance(e), 0);
+    }
+}

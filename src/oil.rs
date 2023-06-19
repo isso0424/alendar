@@ -17,6 +17,25 @@ pub enum Note {
 }
 
 #[allow(unused)]
+#[derive(Clone, Debug)]
+pub enum Strength {
+    Week,
+    Middle,
+    Strong,
+}
+
+#[allow(unused)]
+impl Strength {
+    fn recommended_amount(&self) -> u8 {
+        match self {
+            Self::Week => 4,
+            Self::Middle => 2,
+            Self::Strong => 1,
+        }
+    }
+}
+
+#[allow(unused)]
 impl Note {
     fn satisfy(&self, note: SimpleNote) -> bool {
         match self {
@@ -132,6 +151,7 @@ pub struct EssentialOil {
     name: String,
     note: Note,
     family: Family,
+    strength: Strength,
     // TODO: add effect
     // TODO: add remain
 }
@@ -145,11 +165,12 @@ struct BlendedElement {
 
 #[allow(unused)]
 impl EssentialOil {
-    pub fn new(name: &str, note: Note, family: Family) -> Self {
+    pub fn new(name: &str, note: Note, family: Family, strength: Strength) -> Self {
         Self {
             name: name.to_string(),
             note,
             family,
+            strength,
         }
     }
 
@@ -178,6 +199,10 @@ impl EssentialOil {
                 },
             ],
         }
+    }
+
+    pub fn recommended_amount(&self) -> u8 {
+        self.strength.recommended_amount()
     }
 }
 
@@ -244,8 +269,16 @@ mod tests {
 
     #[test]
     fn test_blend_oils() {
-        let c = EssentialOil::new("test_c", Note::TopAndMiddle, Family::Citrus);
-        let h = EssentialOil::new("test_h", Note::Simple(SimpleNote::Middle), Family::Herball);
+        let c = EssentialOil::new("test_c", Note::TopAndMiddle, Family::Citrus, Strength::Week);
+        let h = EssentialOil::new(
+            "test_h",
+            Note::Simple(SimpleNote::Middle),
+            Family::Herball,
+            Strength::Middle,
+        );
+
+        assert_eq!(c.recommended_amount(), 4);
+        assert_eq!(h.recommended_amount(), 2);
 
         let blended = EssentialOil::blend(&c, 2, &h, 3);
 

@@ -1,7 +1,7 @@
 use bitflags::bitflags;
 
 #[allow(unused)]
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Hash, Debug)]
 pub enum SimpleNote {
     Top,
     Middle,
@@ -9,9 +9,9 @@ pub enum SimpleNote {
 }
 
 #[allow(unused)]
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Note {
-    SimpleNote(SimpleNote),
+    Simple(SimpleNote),
     TopAndMiddle,
     MiddleAndBase,
 }
@@ -20,15 +20,33 @@ pub enum Note {
 impl Note {
     fn satisfy(&self, note: SimpleNote) -> bool {
         match self {
-            Self::SimpleNote(n) => &note == n,
+            Self::Simple(n) => &note == n,
             Self::TopAndMiddle => note == SimpleNote::Top || note == SimpleNote::Middle,
             Self::MiddleAndBase => note == SimpleNote::Middle || note == SimpleNote::Base,
         }
     }
+
+    fn simplify(&self) -> Vec<SimpleNote> {
+        let mut v = vec![];
+
+        match self {
+            Self::Simple(note) => v.push(*note),
+            Self::TopAndMiddle => {
+                v.push(SimpleNote::Top);
+                v.push(SimpleNote::Middle);
+            }
+            Self::MiddleAndBase => {
+                v.push(SimpleNote::Middle);
+                v.push(SimpleNote::Base);
+            }
+        };
+
+        v
+    }
 }
 
 bitflags! {
-    #[derive(Clone, Copy, Default)]
+    #[derive(Clone, Copy, Default, Debug)]
     pub struct Family: u8 {
         const One     = 0b0000001;
         const Citrus  = 0b0000001;
@@ -109,13 +127,20 @@ impl Family {
 }
 
 #[allow(unused)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct EssentialOil {
     name: String,
     note: Note,
     family: Family,
     // TODO: add effect
     // TODO: add remain
+}
+
+#[allow(unused)]
+#[derive(Clone, Debug)]
+struct BlendedElement {
+    oil: EssentialOil,
+    amount: u8,
 }
 
 #[allow(unused)]
@@ -139,6 +164,64 @@ impl EssentialOil {
     pub fn compatible_family(&self, family: Family, threshold: usize) -> bool {
         self.family.distance(family) <= threshold
     }
+
+    pub fn blend(lhs: &Self, left_amount: u8, rhs: &Self, right_amount: u8) -> BlendedOil {
+        BlendedOil {
+            oils: vec![
+                BlendedElement {
+                    oil: lhs.clone(),
+                    amount: left_amount,
+                },
+                BlendedElement {
+                    oil: rhs.clone(),
+                    amount: right_amount,
+                },
+            ],
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct BlendedOil {
+    oils: Vec<BlendedElement>,
+}
+
+#[allow(unused)]
+impl BlendedOil {
+    pub fn missing_notes(&self) -> Vec<SimpleNote> {
+        let mut exists_notes = self.oils.clone().into_iter().flat_map(|o| {
+            o.oil
+                .note
+                .simplify()
+                .into_iter()
+                .collect::<std::collections::HashSet<SimpleNote>>()
+        });
+
+        vec![SimpleNote::Top, SimpleNote::Middle, SimpleNote::Base]
+            .into_iter()
+            .filter(|n| exists_notes.all(|e| e != *n))
+            .collect()
+    }
+
+    pub fn compatible_family(&self, family: Family, threshold: usize) -> bool {
+        self.oils
+            .clone()
+            .into_iter()
+            .map(|o| o.oil.family.distance(family))
+            .min()
+            .unwrap()
+            <= threshold
+    }
+
+    pub fn blend(&self, oil: &EssentialOil, amount: u8) -> BlendedOil {
+        let mut oils = self.oils.clone();
+        oils.push(BlendedElement {
+            oil: oil.clone(),
+            amount,
+        });
+
+        BlendedOil { oils }
+    }
 }
 
 #[cfg(test)]
@@ -157,5 +240,20 @@ mod tests {
         let brend_e_h = e.add(h);
         assert_eq!(brend_e_h.distance(c), 1);
         assert_eq!(brend_e_h.distance(e), 0);
+    }
+
+    #[test]
+    fn test_blend_oils() {
+        let c = EssentialOil::new("test_c", Note::TopAndMiddle, Family::Citrus);
+        let h = EssentialOil::new("test_h", Note::Simple(SimpleNote::Middle), Family::Herball);
+
+        let blended = EssentialOil::blend(&c, 2, &h, 3);
+
+        assert_eq!(*blended.missing_notes().get(0).unwrap(), SimpleNote::Base);
+
+        assert_eq!(blended.oils.get(0).unwrap().amount, 2);
+        assert_eq!(blended.oils.get(0).unwrap().oil.name, "test_c");
+        assert_eq!(blended.oils.get(1).unwrap().amount, 3);
+        assert_eq!(blended.oils.get(1).unwrap().oil.name, "test_h");
     }
 }

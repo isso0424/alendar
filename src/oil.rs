@@ -11,7 +11,7 @@ pub enum SimpleNote {
 #[allow(unused)]
 #[derive(PartialEq, Eq, Clone)]
 pub enum Note {
-    SimpleNote(SimpleNote),
+    Simple(SimpleNote),
     TopAndMiddle,
     MiddleAndBase,
 }
@@ -20,7 +20,7 @@ pub enum Note {
 impl Note {
     fn satisfy(&self, note: SimpleNote) -> bool {
         match self {
-            Self::SimpleNote(n) => &note == n,
+            Self::Simple(n) => &note == n,
             Self::TopAndMiddle => note == SimpleNote::Top || note == SimpleNote::Middle,
             Self::MiddleAndBase => note == SimpleNote::Middle || note == SimpleNote::Base,
         }
@@ -75,7 +75,7 @@ impl Family {
     }
 
     fn r_shift(&mut self) {
-        let mut tmp = self.clone() >> Self::One;
+        let mut tmp = *self >> Self::One;
         if (self.intersects(Self::One)) {
             tmp = tmp.add(Self::Max);
         }
@@ -84,7 +84,7 @@ impl Family {
     }
 
     fn l_shift(&mut self) {
-        let mut tmp = self.clone() << Self::One;
+        let mut tmp = *self << Self::One;
         if (self.intersects(Self::Max)) {
             tmp = tmp.add(Self::One);
         }
@@ -94,8 +94,8 @@ impl Family {
 
     fn distance(&self, family: Self) -> usize {
         let mut i = 0;
-        let mut l = self.clone();
-        let mut r = self.clone();
+        let mut l = *self;
+        let mut r = *self;
 
         loop {
             if (l.intersects(family) || r.intersects(family)) {

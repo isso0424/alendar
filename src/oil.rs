@@ -152,6 +152,7 @@ pub struct EssentialOil {
     note: Note,
     family: Family,
     strength: Strength,
+    remaining_amount: u8,
     // TODO: add effect
     // TODO: add remain
 }
@@ -165,12 +166,19 @@ struct BlendedElement {
 
 #[allow(unused)]
 impl EssentialOil {
-    pub fn new(name: &str, note: Note, family: Family, strength: Strength) -> Self {
+    pub fn new(
+        name: &str,
+        note: Note,
+        family: Family,
+        strength: Strength,
+        remaining_amount: u8,
+    ) -> Self {
         Self {
             name: name.to_string(),
             note,
             family,
             strength,
+            remaining_amount,
         }
     }
 
@@ -269,12 +277,19 @@ mod tests {
 
     #[test]
     fn test_blend_oils() {
-        let c = EssentialOil::new("test_c", Note::TopAndMiddle, Family::Citrus, Strength::Week);
+        let c = EssentialOil::new(
+            "test_c",
+            Note::TopAndMiddle,
+            Family::Citrus,
+            Strength::Week,
+            50,
+        );
         let h = EssentialOil::new(
             "test_h",
             Note::Simple(SimpleNote::Middle),
             Family::Herball,
             Strength::Middle,
+            50,
         );
 
         assert_eq!(c.recommended_amount(), 4);

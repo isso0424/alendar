@@ -34,14 +34,14 @@ mod essential_oil {
         }
     }
 
-    impl Into<oil::Note> for Note {
-        fn into(self) -> oil::Note {
-            match self {
-                Self::Top => oil::Note::Simple(oil::SimpleNote::Top),
-                Self::Middle => oil::Note::Simple(oil::SimpleNote::Middle),
-                Self::Base => oil::Note::Simple(oil::SimpleNote::Base),
-                Self::TopAndMiddle => oil::Note::TopAndMiddle,
-                Self::MiddleAndBase => oil::Note::MiddleAndBase,
+    impl From<Note> for oil::Note {
+        fn from(val: Note) -> oil::Note {
+            match val {
+                Note::Top => oil::Note::Simple(oil::SimpleNote::Top),
+                Note::Middle => oil::Note::Simple(oil::SimpleNote::Middle),
+                Note::Base => oil::Note::Simple(oil::SimpleNote::Base),
+                Note::TopAndMiddle => oil::Note::TopAndMiddle,
+                Note::MiddleAndBase => oil::Note::MiddleAndBase,
             }
         }
     }
@@ -67,12 +67,12 @@ mod essential_oil {
         }
     }
 
-    impl Into<oil::Strength> for Strength {
-        fn into(self) -> oil::Strength {
-            match self {
-                Self::Week => oil::Strength::Week,
-                Self::Middle => oil::Strength::Middle,
-                Self::Strong => oil::Strength::Strong,
+    impl From<Strength> for oil::Strength {
+        fn from(val: Strength) -> oil::Strength {
+            match val {
+                Strength::Week => oil::Strength::Week,
+                Strength::Middle => oil::Strength::Middle,
+                Strength::Strong => oil::Strength::Strong,
             }
         }
     }

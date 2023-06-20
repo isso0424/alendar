@@ -148,11 +148,12 @@ impl Family {
 #[allow(unused)]
 #[derive(Clone, Debug)]
 pub struct EssentialOil {
-    name: String,
-    note: Note,
-    family: Family,
-    strength: Strength,
-    remaining_amount: u8,
+    pub id: uuid::Uuid,
+    pub name: String,
+    pub note: Note,
+    pub family: Family,
+    pub strength: Strength,
+    pub remaining_amount: u8,
     // TODO: add effect
     // TODO: add remain
 }
@@ -167,6 +168,7 @@ struct BlendedElement {
 #[allow(unused)]
 impl EssentialOil {
     pub fn new(
+        id: uuid::Uuid,
         name: &str,
         note: Note,
         family: Family,
@@ -174,6 +176,7 @@ impl EssentialOil {
         remaining_amount: u8,
     ) -> Self {
         Self {
+            id,
             name: name.to_string(),
             note,
             family,
@@ -278,6 +281,7 @@ mod tests {
     #[test]
     fn test_blend_oils() {
         let c = EssentialOil::new(
+            uuid::Uuid::new_v4(),
             "test_c",
             Note::TopAndMiddle,
             Family::Citrus,
@@ -285,6 +289,7 @@ mod tests {
             50,
         );
         let h = EssentialOil::new(
+            uuid::Uuid::new_v4(),
             "test_h",
             Note::Simple(SimpleNote::Middle),
             Family::Herball,

@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 bitflags = "2.3.1"
-sea-orm = { version = "0.11.3", features = ["sqlx-sqlite", "runtime-tokio"] }
+sea-orm = { version = "0.11.3", features = ["sqlx-sqlite", "runtime-tokio", "runtime-tokio-rustls"] }
 tokio = { version = "1.28.2", features = ["full"] }

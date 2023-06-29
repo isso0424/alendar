@@ -154,8 +154,7 @@ pub struct EssentialOil {
     pub family: Family,
     pub strength: Strength,
     pub remaining_amount: u8,
-    // TODO: add effect
-    // TODO: add remain
+    pub effects: Vec<String>,
 }
 
 #[allow(unused)]
@@ -174,6 +173,7 @@ impl EssentialOil {
         family: Family,
         strength: Strength,
         remaining_amount: u8,
+        effects: Vec<String>,
     ) -> Self {
         Self {
             id,
@@ -182,6 +182,7 @@ impl EssentialOil {
             family,
             strength,
             remaining_amount,
+            effects,
         }
     }
 
@@ -222,6 +223,25 @@ pub struct BlendedOil {
     oils: Vec<BlendedElement>,
 }
 
+trait DedupVec<T: PartialEq + Clone> {
+    fn dedup_collect(self) -> Vec<T>;
+}
+
+impl<I, T> DedupVec<T> for I
+where
+    T: PartialEq + Clone,
+    I: Iterator<Item = T>,
+{
+    fn dedup_collect(self) -> Vec<T> {
+        self.fold(vec![], |mut v, item| {
+            if !v.clone().into_iter().any(|i| item == i) {
+                v.push(item);
+            }
+            v
+        })
+    }
+}
+
 #[allow(unused)]
 impl BlendedOil {
     pub fn missing_notes(&self) -> Vec<SimpleNote> {
@@ -247,6 +267,14 @@ impl BlendedOil {
             .min()
             .unwrap()
             <= threshold
+    }
+
+    pub fn get_effects(&self) -> Vec<String> {
+        self.oils
+            .clone()
+            .into_iter()
+            .flat_map(|o| o.oil.effects)
+            .dedup_collect()
     }
 
     pub fn blend(&self, oil: &EssentialOil, amount: u8) -> BlendedOil {
@@ -287,6 +315,7 @@ mod tests {
             Family::Citrus,
             Strength::Week,
             50,
+            vec!["hoge".to_string()],
         );
         let h = EssentialOil::new(
             uuid::Uuid::new_v4(),
@@ -295,6 +324,7 @@ mod tests {
             Family::Herball,
             Strength::Middle,
             50,
+            vec!["hoge".to_string(), "fuga".to_string()],
         );
 
         assert_eq!(c.recommended_amount(), 4);
@@ -308,5 +338,9 @@ mod tests {
         assert_eq!(blended.oils.get(0).unwrap().oil.name, "test_c");
         assert_eq!(blended.oils.get(1).unwrap().amount, 3);
         assert_eq!(blended.oils.get(1).unwrap().oil.name, "test_h");
+
+        assert_eq!(blended.get_effects().get(0).unwrap(), "hoge");
+        assert_eq!(blended.get_effects().get(1).unwrap(), "fuga");
+        assert_eq!(blended.get_effects().len(), 2);
     }
 }

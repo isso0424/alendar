@@ -273,7 +273,7 @@ impl BlendedOil {
         self.oils
             .clone()
             .into_iter()
-            .flat_map(|o| o.oil.effects.clone())
+            .flat_map(|o| o.oil.effects)
             .dedup_collect()
     }
 

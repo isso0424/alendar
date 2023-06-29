@@ -233,11 +233,12 @@ where
     I: Iterator<Item = T>,
 {
     fn dedup_collect(self) -> Vec<T> {
-        // TODO: rewrite by reduce
-        let mut v = self.collect::<Vec<_>>();
-        v.dedup();
-
-        v
+        self.fold(vec![], |mut v, item| {
+            if !v.clone().into_iter().any(|i| item == i) {
+                v.push(item);
+            }
+            v
+        })
     }
 }
 
